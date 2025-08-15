@@ -32,6 +32,12 @@ function App() {
       if (existingUserIndex === -1) {
         // Add user to registered users if not already there
         savedUsers.push({
+          
+          // Trigger storage event to notify teacher dashboard
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: 'registeredUsers',
+            newValue: JSON.stringify(savedUsers)
+          }));
           id: userData.id,
           name: userData.name,
           email: userData.email,

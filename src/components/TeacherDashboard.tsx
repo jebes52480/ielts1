@@ -36,17 +36,42 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user, onLogout }) =
       setFilteredResults(results);
     };
 
-    // Load manual tests
-    const savedTests = localStorage.getItem('manualTests');
-    if (savedTests) {
-      setManualTests(JSON.parse(savedTests));
-    }
+    // Load manual tests function
+    const loadManualTests = () => {
+      const savedTests = localStorage.getItem('manualTests');
+      if (savedTests) {
+        setManualTests(JSON.parse(savedTests));
+      }
+    };
 
-    // Load all registered students
-    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-    setStudents(registeredUsers.filter((user: any) => user.role === 'student'));
+    // Load students function
+    const loadStudents = () => {
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      setStudents(registeredUsers.filter((user: any) => user.role === 'student'));
+    };
 
+    // Initial loads
+    loadManualTests();
+    loadStudents();
     loadAllResults();
+
+    // Listen for storage changes to update data in real-time
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'registeredUsers') {
+        loadStudents();
+        loadAllResults(); // Reload results as new students might have results
+      } else if (e.key === 'manualTests') {
+        loadManualTests();
+      } else if (e.key && e.key.startsWith('testResults_')) {
+        loadAllResults();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -126,6 +151,12 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user, onLogout }) =
     localStorage.setItem('manualTests', JSON.stringify(updatedTests));
     setShowTestCreator(false);
     
+    // Trigger storage event to notify student dashboards
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'manualTests',
+      newValue: JSON.stringify(updatedTests)
+    }));
+    
     // Log for debugging
     console.log('Test saved successfully:', test.title);
     console.log('Total tests now:', updatedTests.length);
@@ -135,6 +166,12 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user, onLogout }) =
     const updatedTests = manualTests.filter(test => test.id !== testId);
     setManualTests(updatedTests);
     localStorage.setItem('manualTests', JSON.stringify(updatedTests));
+    
+    // Trigger storage event
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'manualTests',
+      newValue: JSON.stringify(updatedTests)
+    }));
   };
 
   const toggleTestStatus = (testId: string) => {
@@ -143,6 +180,12 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user, onLogout }) =
     );
     setManualTests(updatedTests);
     localStorage.setItem('manualTests', JSON.stringify(updatedTests));
+    
+    // Trigger storage event
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'manualTests',
+      newValue: JSON.stringify(updatedTests)
+    }));
   };
 
   const removeStudent = (studentId: string) => {

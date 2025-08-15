@@ -127,6 +127,7 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ user, manualTest, onTestC
       onTestComplete(result);
     } catch (error) {
       console.error('Error submitting test:', error);
+      alert('There was an error submitting your test. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -268,11 +269,21 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ user, manualTest, onTestC
               <button
                 onClick={submitTest}
                 disabled={isSubmitting}
-                className="flex items-center space-x-1 sm:space-x-2 bg-white bg-opacity-20 text-white px-3 sm:px-6 py-2 rounded-lg hover:bg-opacity-30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-xs sm:text-sm"
+                className="flex items-center space-x-1 sm:space-x-2 bg-white bg-opacity-20 text-white px-3 sm:px-6 py-2 rounded-lg hover:bg-opacity-30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-xs sm:text-sm relative"
               >
-                <Send className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">{isSubmitting ? 'Submitting...' : 'Submit Test'}</span>
-                <span className="sm:hidden">{isSubmitting ? 'Submit...' : 'Submit'}</span>
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
+                    <span className="hidden sm:inline">Processing...</span>
+                    <span className="sm:hidden">Processing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Submit Test</span>
+                    <span className="sm:hidden">Submit</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

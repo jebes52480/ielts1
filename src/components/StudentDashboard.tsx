@@ -34,30 +34,48 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onStartTest, 
       setTestResults([]);
     }
 
-    // Load available manual tests
-    const savedManualTests = localStorage.getItem('manualTests');
-    if (savedManualTests) {
-      try {
-        const allTests = JSON.parse(savedManualTests);
-        if (Array.isArray(allTests)) {
-          // Filter tests that are active and either not scheduled or scheduled for now/past
-          const now = new Date();
-          const availableTests = allTests.filter((test: ManualTest) => {
-            if (!test.isActive) return false;
-            if (!test.scheduledDate) return true;
-            return new Date(test.scheduledDate) <= now;
-          });
-          setManualTests(availableTests);
-        } else {
+    // Load available manual tests function
+    const loadManualTests = () => {
+      const savedManualTests = localStorage.getItem('manualTests');
+      if (savedManualTests) {
+        try {
+          const allTests = JSON.parse(savedManualTests);
+          if (Array.isArray(allTests)) {
+            // Filter tests that are active and either not scheduled or scheduled for now/past
+            const now = new Date();
+            const availableTests = allTests.filter((test: ManualTest) => {
+              if (!test.isActive) return false;
+              if (!test.scheduledDate) return true;
+              return new Date(test.scheduledDate) <= now;
+            });
+            setManualTests(availableTests);
+          } else {
+            setManualTests([]);
+          }
+        } catch (error) {
+          console.error('Error parsing manual tests:', error);
           setManualTests([]);
         }
-      } catch (error) {
-        console.error('Error parsing manual tests:', error);
+      } else {
         setManualTests([]);
       }
-    } else {
-      setManualTests([]);
-    }
+    };
+
+    // Initial load
+    loadManualTests();
+
+    // Listen for storage changes to update manual tests in real-time
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'manualTests') {
+        loadManualTests();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, [user.id]);
 
   const averageScore = testResults.length > 0 

@@ -94,6 +94,12 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
       // Also initialize empty test results for the new user
       localStorage.setItem(`testResults_${newUser.id}`, JSON.stringify([]));
       
+      // Force a storage event to notify other components
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'registeredUsers',
+        newValue: JSON.stringify(savedUsers)
+      }));
+      
       onLogin({
         id: newUser.id,
         name: newUser.name,

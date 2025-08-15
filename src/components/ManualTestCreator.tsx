@@ -89,6 +89,14 @@ const ManualTestCreator: React.FC<ManualTestCreatorProps> = ({ onSave, onCancel 
 
     console.log('Creating new test:', newTest);
     onSave(newTest);
+    
+    // Trigger storage event to notify other components
+    const savedTests = JSON.parse(localStorage.getItem('manualTests') || '[]');
+    const updatedTests = [...savedTests, newTest];
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'manualTests',
+      newValue: JSON.stringify(updatedTests)
+    }));
   };
 
   return (
